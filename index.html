@@ -1,96 +1,133 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Video Player</title>
+    <title>Tic Tac Toe</title>
     <style>
         body {
+            font-family: Arial;
+            text-align: center;
             background: #0f172a;
             color: white;
-            text-align: center;
-            font-family: Arial;
         }
 
-        .player {
-            width: 700px;
-            margin: 50px auto;
+        h1 {
+            margin-top: 20px;
         }
 
-        video {
-            width: 100%;
-            border-radius: 10px;
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
         }
 
-        .controls {
-            margin-top: 10px;
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 30px;
+            background: #1e293b;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .cell:hover {
+            background: #38bdf8;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 20px;
         }
 
         button {
-            padding: 8px 12px;
-            margin: 5px;
+            margin-top: 20px;
+            padding: 10px 20px;
             border: none;
+            background: #22c55e;
+            color: white;
             border-radius: 5px;
             cursor: pointer;
         }
 
-        input[type="range"] {
-            width: 100%;
+        button:hover {
+            background: #16a34a;
         }
     </style>
 </head>
 
 <body>
 
-<h1>Custom Video Player</h1>
+<h1>Tic Tac Toe</h1>
 
-<div class="player">
-    <video id="video" src="file:///C:/Users/HP/Downloads/M/Garudan_(2024)_Tamil.mp4"></video>
+<div class="board" id="board"></div>
 
-    <div class="controls">
-        <button onclick="playPause()">Play / Pause</button>
-        <button onclick="fullScreen()">Fullscreen</button>
-        
-        <br><br>
+<div id="status">Player X's Turn</div>
 
-        <input type="range" id="progress" value="0">
-
-        <br><br>
-
-        Volume:
-        <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
-    </div>
-</div>
+<button onclick="resetGame()">Restart Game</button>
 
 <script>
-    let video = document.getElementById("video");
-    let progress = document.getElementById("progress");
-    let volume = document.getElementById("volume");
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let gameActive = true;
 
-    function playPause() {
-        if (video.paused) {
-            video.play();
-        } else {
-            video.pause();
+    const winPatterns = [
+        [0,1,2], [3,4,5], [6,7,8], // rows
+        [0,3,6], [1,4,7], [2,5,8], // columns
+        [0,4,8], [2,4,6]           // diagonals
+    ];
+
+    const boardDiv = document.getElementById("board");
+    const statusText = document.getElementById("status");
+
+    // Create board
+    board.forEach((_, index) => {
+        const cell = document.createElement("button");
+        cell.classList.add("cell");
+        cell.addEventListener("click", () => makeMove(index));
+        boardDiv.appendChild(cell);
+    });
+
+    function makeMove(index) {
+        if (board[index] !== "" || !gameActive) return;
+
+        board[index] = currentPlayer;
+        boardDiv.children[index].innerText = currentPlayer;
+
+        if (checkWinner()) {
+            statusText.innerText = `Player ${currentPlayer} Wins!`;
+            gameActive = false;
+            return;
         }
+
+        if (!board.includes("")) {
+            statusText.innerText = "It's a Draw!";
+            gameActive = false;
+            return;
+        }
+
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        statusText.innerText = `Player ${currentPlayer}'s Turn`;
     }
 
-    function fullScreen() {
-        video.requestFullscreen();
+    function checkWinner() {
+        return winPatterns.some(pattern => {
+            return pattern.every(index => board[index] === currentPlayer);
+        });
     }
 
-    // Update progress bar
-    video.ontimeupdate = function () {
-        progress.value = (video.currentTime / video.duration) * 100;
-    };
+    function resetGame() {
+        board = ["", "", "", "", "", "", "", "", ""];
+        currentPlayer = "X";
+        gameActive = true;
+        statusText.innerText = "Player X's Turn";
 
-    // Seek video
-    progress.oninput = function () {
-        video.currentTime = (progress.value / 100) * video.duration;
-    };
-
-    // Volume control
-    volume.oninput = function () {
-        video.volume = volume.value;
-    };
+        Array.from(boardDiv.children).forEach(cell => {
+            cell.innerText = "";
+        });
+    }
 </script>
 
 </body>
